@@ -1,115 +1,163 @@
-const express = require("express")
-const router = express.Router()
+const express = require("express");
+const router = express.Router();
 
-const User = require("../schemas/User")
+const User = require("../schemas/User");
 
 
 // CREATE USER
-router.post("/",async(req,res)=>{
+router.post("/", async (req, res) => {
+  try {
 
-const user = new User(req.body)
+    const user = new User(req.body);
+    await user.save();
 
-await user.save()
+    res.status(201).json(user);
 
-res.json(user)
+  } catch (error) {
 
-})
+    res.status(400).json({
+      message: error.message
+    });
+
+  }
+});
 
 
-// GET ALL USER
-router.get("/",async(req,res)=>{
+// GET ALL USERS
+router.get("/", async (req, res) => {
+  try {
 
-const users = await User.find({
-isDeleted:false
-}).populate("role")
+    const users = await User.find({
+      isDeleted: false
+    }).populate("role");
 
-res.json(users)
+    res.json(users);
 
-})
+  } catch (error) {
+
+    res.status(500).json(error);
+
+  }
+});
 
 
 // GET USER BY ID
-router.get("/:id",async(req,res)=>{
+router.get("/:id", async (req, res) => {
+  try {
 
-const user = await User.findById(req.params.id)
-.populate("role")
+    const user = await User.findOne({
+      _id: req.params.id,
+      isDeleted: false
+    }).populate("role");
 
-res.json(user)
+    if (!user) {
+      return res.json({ message: "User not found" });
+    }
 
-})
+    res.json(user);
+
+  } catch (error) {
+
+    res.status(500).json(error);
+
+  }
+});
 
 
 // UPDATE USER
-router.put("/:id",async(req,res)=>{
+router.put("/:id", async (req, res) => {
+  try {
 
-const user = await User.findByIdAndUpdate(
-req.params.id,
-req.body,
-{new:true}
-)
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true, runValidators: true }
+    );
 
-res.json(user)
+    res.json(user);
 
-})
+  } catch (error) {
+
+    res.status(400).json(error);
+
+  }
+});
 
 
 // SOFT DELETE USER
-router.delete("/:id",async(req,res)=>{
+router.delete("/:id", async (req, res) => {
+  try {
 
-const user = await User.findByIdAndUpdate(
-req.params.id,
-{isDeleted:true},
-{new:true}
-)
+    const user = await User.findByIdAndUpdate(
+      req.params.id,
+      { isDeleted: true },
+      { new: true }
+    );
 
-res.json(user)
+    res.json(user);
 
-})
+  } catch (error) {
+
+    res.status(500).json(error);
+
+  }
+});
 
 
 // ENABLE USER
-router.post("/enable",async(req,res)=>{
+router.post("/enable", async (req, res) => {
+  try {
 
-const {email,username} = req.body
+    const { email, username } = req.body;
 
-const user = await User.findOne({
-email:email,
-username:username
-})
+    const user = await User.findOne({
+      email,
+      username
+    });
 
-if(!user){
-return res.json({message:"User not found"})
-}
+    if (!user) {
+      return res.json({ message: "User not found" });
+    }
 
-user.status = true
+    user.status = true;
+    await user.save();
 
-await user.save()
+    res.json(user);
 
-res.json(user)
+  } catch (error) {
 
-})
+    res.status(500).json(error);
+
+  }
+});
 
 
 // DISABLE USER
-router.post("/disable",async(req,res)=>{
+router.post("/disable", async (req, res) => {
+  try {
 
-const {email,username} = req.body
+    const { email, username } = req.body;
 
-const user = await User.findOne({
-email:email,
-username:username
-})
+    const user = await User.findOne({
+      email,
+      username
+    });
 
-if(!user){
-return res.json({message:"User not found"})
-}
+    if (!user) {
+      return res.json({ message: "User not found" });
+    }
 
-user.status = false
+    user.status = false;
+    await user.save();
 
-await user.save()
+    res.json(user);
 
-res.json(user)
+  } catch (error) {
 
-})
+    res.status(500).json(error);
 
-module.exports = router
+  }
+});
+
+
+module.exports = router;

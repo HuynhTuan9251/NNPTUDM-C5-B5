@@ -5,6 +5,7 @@ const userSchema = new mongoose.Schema({
 username:{
 type:String,
 required:true,
+unique:true
 },
 
 password:{
@@ -15,6 +16,7 @@ required:true
 email:{
 type:String,
 required:true,
+unique:true
 },
 
 fullName:{
@@ -34,7 +36,8 @@ default:false
 
 role:{
 type:mongoose.Schema.Types.ObjectId,
-ref:"Role"
+ref:"Role",
+required:true
 },
 
 loginCount:{
